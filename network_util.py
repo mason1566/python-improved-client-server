@@ -28,16 +28,24 @@ class Request:
             )
         return request
 
+def parseHttpRequest(httpRequest):
+    headers, content = httpRequest.split("\r\n\r\n", 1)
+    request = parseRequestHeaders(headers)
+
+    if content:
+        request.content = content
+    
+    return request
+
 # Assumes request lines end with "\r\n".
 def getHeaderValue(requestHeader, header):
     value = requestHeader.partition(f"{header}: ")[2]
     value = value.partition("\r\n")[0]
     return value
 
-
-def parseRequestHeader(requestHeader):
+def parseRequestHeaders(requestHeaders):
     headers = {}
-    lines = requestHeader.split("\r\n")
+    lines = requestHeaders.split("\r\n")
 
     request_line = lines[0].split(" ")
     request_type = request_line[0]
@@ -45,6 +53,7 @@ def parseRequestHeader(requestHeader):
 
     del lines[0]
 
+    # parse headers
     for header in lines:
         h = header.partition(": ")
         if h[1] == ": ":

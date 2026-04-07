@@ -1,6 +1,6 @@
 import socket
 import argparse
-from network_util import Request, parseRequestHeader, generateResponse #, GetRequest, PostRequest, DeleteRequest
+from network_util import Request, parseHttpRequest, generateResponse #, GetRequest, PostRequest, DeleteRequest
 
 # print(generateResponse(200, "OK", "text/plain", "Hello!"))
 
@@ -33,14 +33,7 @@ while True:
         
     buf = buf.decode("utf-8", errors="replace").replace("\\n", "\n").replace("\\r", "\r") if len(buf) > 0 else ""
 
-    r = buf.split("\r\n\r\n", 1)
-    requestHeader = r[0]
-    requestContent = r[1]
-
-    request = parseRequestHeader(requestHeader)
-
-    if requestContent:
-        request.content = requestContent
+    request = parseHttpRequest(buf)
 
     print(request.request())
 
