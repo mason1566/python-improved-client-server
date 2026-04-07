@@ -3,9 +3,9 @@ class Request:
         self.request_type = request_type
         self.request_path = request_path
         self.host = host
-        self.content_type = ""
-        self.content_length = 0
-        self.content = ""
+        self.content_type = content
+        self.content_length = len(content.encode())
+        self.content = content
 
     def request(self):
         request = ""
@@ -15,7 +15,7 @@ class Request:
                 f"Host: {self.host}\r\n"
                 f"Connection: close\r\n"
                 f"Content-Type: {self.content_type or "text/html"}\r\n"
-                f"Content-Length: {len(self.content)}\r\n"
+                f"Content-Length: {len(self.content.encode())}\r\n" # http content-length is measured in bytes
                 f"\r\n"
                 f"{self.content}\r\n"
             )
@@ -28,24 +28,19 @@ class Request:
             )
         return request
 
-def parseHttpRequest(httpRequest):
-    headers, content = httpRequest.split("\r\n\r\n", 1)
-    request = parseRequestHeaders(headers)
+def parse_http_request(http_request):
+    headers, content = http_request.split("\r\n\r\n", 1)
+    request = parse_request_headers(headers)
 
     if content:
         request.content = content
     
     return request
 
-# Assumes request lines end with "\r\n".
-def getHeaderValue(requestHeader, header):
-    value = requestHeader.partition(f"{header}: ")[2]
-    value = value.partition("\r\n")[0]
-    return value
 
-def parseRequestHeaders(requestHeaders):
+def parse_request_headers(request_headers):
     headers = {}
-    lines = requestHeaders.split("\r\n")
+    lines = request_headers.split("\r\n")
 
     request_line = lines[0].split(" ")
     request_type = request_line[0]
@@ -69,7 +64,7 @@ def parseRequestHeaders(requestHeaders):
     return request
 
 
-def generateResponse(status_code, status_message, content_type = "", content: str = ""):
+def generate_response(status_code, status_message, content_type = "", content: str = ""):
     content_length = len(content)
     
     response = ""
