@@ -1,0 +1,55 @@
+import socket
+import argparse
+from network_util import Request, parseRequestHeader, generateResponse #, GetRequest, PostRequest, DeleteRequest
+
+# print(generateResponse(200, "OK", "text/plain", "Hello!"))
+
+parser = argparse.ArgumentParser()
+parser.add_argument("port", nargs="?", type=int, default=28333)
+parser.add_argument("host", nargs="?", default="")
+
+args = parser.parse_args()
+
+HOST = args.host
+PORT = args.port
+
+sock = socket.socket()
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+sock.bind((HOST, PORT))
+sock.listen()
+
+while True:
+    new_conn = sock.accept()
+    new_sock = new_conn[0]
+
+    buf = b''
+
+    while True:
+        d = new_sock.recv(4096)
+        buf += d
+        if b"\r\n\r\n" in buf:
+            break
+        
+    buf = buf.decode("utf-8", errors="replace").replace("\\n", "\n").replace("\\r", "\r") if len(buf) > 0 else ""
+
+    r = buf.split("\r\n\r\n", 1)
+
+    requestHeader = r[0]
+
+    request = parseRequestHeader(requestHeader)
+
+    if r[1]:
+        request.content = r[1]
+
+    print(request.request())
+
+    response = generateResponse("200", "OK")
+    # print(response)
+    
+    new_sock.sendall(response.encode('utf-8'))
+    new_sock.close()
+
+    buf = b""
+    print("Connection closed!\n")
+
