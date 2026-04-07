@@ -34,13 +34,13 @@ while True:
     buf = buf.decode("utf-8", errors="replace").replace("\\n", "\n").replace("\\r", "\r") if len(buf) > 0 else ""
 
     r = buf.split("\r\n\r\n", 1)
-
     requestHeader = r[0]
+    requestContent = r[1]
 
     request = parseRequestHeader(requestHeader)
 
-    if r[1]:
-        request.content = r[1]
+    if requestContent:
+        request.content = requestContent
 
     print(request.request())
 
